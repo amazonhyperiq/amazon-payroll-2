@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>سلف موظفي وعمال أمازون سوبر ماركت</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#39705c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="سلف الموظفين">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-box">
+      <div class="auth-brand">
+        <img src="logo.jpg" alt="Amazon Super Market">
+        <h1>نظام سلف موظفي وعمال أمازون</h1>
+        <p>تسجيل الدخول</p>
+      </div>
+
+      <div class="auth-panel">
+        <label>اختر اسمك
+          <select id="loginNameSelect" autocomplete="username">
+            <option value="">اختر الاسم</option>
+          </select>
+        </label>
+
+        <div id="loginExisting">
+          <label>كلمة المرور
+            <input id="loginPassword" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور">
+          </label>
+          <button type="button" class="auth-submit" id="loginBtn">دخول</button>
+          <button type="button" class="password-link first-setup-link hidden" id="showFirstSetupBtn">إعداد كلمة المرور لأول مرة</button>
+          <button type="button" class="password-link" id="changePasswordBtn">تغيير كلمة المرور</button>
+          <button type="button" class="password-link danger-link" id="forgotPasswordBtn">نسيت كلمة المرور؟</button>
+        </div>
+
+        <div id="giverFirstSetup" class="first-setup hidden">
+          <div class="first-setup-title">إعداد كلمة المرور لأول مرة</div>
+          <p class="password-note">إذا لم يتم إعداد كلمة مرور لهذا المانح سابقًا، ضع كلمة مرور جديدة ثم أكدها.</p>
+          <label>كلمة المرور الجديدة
+            <input id="giverNewPassword" type="password" autocomplete="new-password" placeholder="6 أحرف أو أكثر">
+          </label>
+          <label>تأكيد كلمة المرور
+            <input id="giverConfirmPassword" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور">
+          </label>
+          <button type="button" class="auth-submit" id="giverSetupBtn">حفظ كلمة المرور والدخول</button>
+          <button type="button" class="password-link" id="cancelFirstSetupBtn">رجوع لتسجيل الدخول</button>
+        </div>
+      </div>
+
+      <div class="auth-error" id="authError"></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <header class="top redesigned-top">
+      <div class="brand">
+        <img src="logo.jpg" alt="Amazon Super Market">
+        <div class="brand-text">
+          <div class="brand-en">AMAZON<br><span>SUPER MARKET</span></div>
+          <div class="brand-ar">أمازون سوبر ماركت</div>
+        </div>
+      </div>
+      <div class="title-box">
+        <div class="title">نظام إدارة الموظفين والعمال</div>
+        <div class="month-title">أمازون سوبر ماركت</div>
+      </div>
+      <div class="side-note"><b>إدارة</b><br>دقيقة<br>وسريعة</div>
+    </header>
+
+    <section class="dashboard-info">
+      <div class="today"><span>التاريخ اليوم</span><strong id="today"></strong></div>
+      <div class="today current-user"><span>المستخدم الحالي</span><strong id="currentUserName"></strong></div>
+      <button class="tool logout" id="logoutBtn"><span class="tool-icon">↪</span><span class="tool-label">تسجيل الخروج</span></button>
+    </section>
+
+    <section class="home-dashboard" id="homeDashboard">
+      <div class="home-heading">
+        <div>
+          <span class="home-kicker">لوحة التحكم الرئيسية</span>
+          <h1>اختر القسم الذي تريد العمل عليه</h1>
+          <p>جميع عمليات النظام مرتبة في أقسام مستقلة وسهلة الوصول.</p>
+        </div>
+        <div class="home-badge">AMAZON<br><small>MANAGEMENT SYSTEM</small></div>
+      </div>
+      <div class="home-cards">
+        <button class="home-card advances-card main-nav" id="advancesNav">
+          <span class="home-card-icon">💰</span><span class="home-card-title">السلف</span>
+          <span class="home-card-desc">إضافة وتعديل ومتابعة سلف الموظفين والعمال</span><span class="home-card-arrow">←</span>
+        </button>
+        <button class="home-card leaves-card main-nav" id="leavesNav">
+          <span class="home-card-icon">📅</span><span class="home-card-title">الإجازات والزمنيات</span>
+          <span class="home-card-desc">تسجيل الإجازات اليومية والزمنية ومتابعتها</span><span class="home-card-arrow">←</span>
+        </button>
+        <button class="home-card salary-card main-nav" id="salaryNav"><span class="home-card-icon">💵</span><span class="home-card-title">رواتب الموظفين</span><span class="home-card-desc">الراتب الاسمي والإضافي والخصومات والكشف الشهري</span><span class="home-card-arrow">←</span></button>
+        <button class="home-card penalties-card main-nav" id="penaltiesNav">
+          <span class="home-card-icon">⚠</span><span class="home-card-title">العقوبات</span>
+          <span class="home-card-desc">إدارة وتنظيم العقوبات والملاحظات الإدارية</span><span class="home-card-arrow">←</span>
+        </button>
+        <button class="home-card rewards-card main-nav" id="rewardsNav">
+          <span class="home-card-icon">★</span><span class="home-card-title">المكافآت</span>
+          <span class="home-card-desc">إدارة المكافآت والتقدير للموظفين والعمال</span><span class="home-card-arrow">←</span>
+        </button>
+      </div>
+      <div class="home-footer-line"><span>AMAZON SUPER MARKET</span><span>نظام إداري متكامل</span></div>
+    </section>
+
+    <section class="advance-menu-page hidden-view" id="salaryMenu"><div class="advance-menu-head"><div><span class="home-kicker">قسم رواتب الموظفين</span><h2>إدارة وكشوف الرواتب</h2><p>ربط الراتب بالسلف والإجازات والزمنيات والعقوبات والإضافي والعمل الثاني.</p></div><button class="advance-menu-home" id="salaryMenuHomeBtn">⌂ الرئيسية</button></div><div class="advance-menu-grid"><button class="advance-menu-card green manager-only" id="salaryEntryBtn"><span>＋</span><b>إدخال / تعديل راتب</b><small>بيانات الراتب للشهر</small></button><button class="advance-menu-card gold" id="salaryReportBtn"><span>📊</span><b>كشف رواتب الموظفين</b><small>اختيار الشهر وعرض جميع الموظفين</small></button><button class="advance-menu-card purple" id="salaryEmployeeBtn"><span>👤</span><b>كشف راتب موظف</b><small>اختيار الشهر والموظف</small></button></div></section>
+<section class="advance-menu-page hidden-view" id="penaltiesMenu"><div class="advance-menu-head"><div><span class="home-kicker">قسم العقوبات</span><h2>إدارة العقوبات وتقاريرها</h2><p>خصم، غياب ×1، غياب ×2 وربطها بكشف الراتب.</p></div><button class="advance-menu-home" id="penaltiesMenuHomeBtn">⌂ الرئيسية</button></div><div class="advance-menu-grid"><button class="advance-menu-card red manager-only" id="penaltyAddBtn"><span>＋</span><b>إضافة عقوبة</b><small>إدخال عقوبة جديدة</small></button><button class="advance-menu-card blue manager-only" id="penaltyEditBtn"><span>✎</span><b>تعديل / حذف عقوبة</b><small>إدارة العقوبات المسجلة</small></button><button class="advance-menu-card gold" id="penaltyAllReportBtn"><span>📋</span><b>تفاصيل جميع العقوبات</b><small>تحديد الشهر</small></button><button class="advance-menu-card purple" id="penaltyEmployeeReportBtn"><span>👤</span><b>عقوبات كل موظف</b><small>تحديد الشهر والموظف</small></button></div></section>
+<section class="detail-page hidden-view" id="salaryReport"><div class="detail-page-head"><div><span class="home-kicker">كشف رواتب الموظفين</span><h2>الرواتب الشهرية</h2><p id="salaryReportMonthTitle">الشهر: —</p></div><div class="salary-report-actions"><button class="advance-menu-home salary-print-btn" id="salaryReportPrintBtn">🖨 طباعة الكشف</button><button class="advance-menu-home salary-pdf-btn" id="salaryReportPdfBtn">PDF حفظ PDF</button><button class="advance-menu-home" id="salaryReportHomeBtn">⌂ الرئيسية</button></div></div><div class="detail-filters"><label>الشهر المطلوب<select id="salaryReportMonth"><option value="">اختر الشهر</option></select></label></div><div class="table-wrap salary-report-table-wrap"><table id="salaryReportTable"><thead><tr><th>الموظف</th><th>الراتب</th><th>الساعات الفعلية</th><th>الغياب / الإجازات / الزمنيات</th><th>الإضافي</th><th>السلف</th><th>العقوبات</th><th>العمل الثاني</th><th>صافي الراتب</th><th>الحالة / إجراء</th></tr></thead><tbody id="salaryReportBody"></tbody></table></div></section>
+<section class="detail-page hidden-view" id="salaryEmployeeReport"><div class="detail-page-head"><div><span class="home-kicker">كشف راتب موظف</span><h2>تفاصيل راتب الموظف</h2><p id="salaryEmployeeMonthTitle">الشهر: —</p></div><div class="salary-report-actions"><button class="advance-menu-home" id="salaryEmployeePrintBtn">🖨 طباعة الكشف</button><button class="advance-menu-home" id="salaryEmployeePdfBtn">PDF حفظ PDF</button><button class="advance-menu-home" id="salaryEmployeeHomeBtn">⌂ الرئيسية</button></div></div><div class="detail-filters employee-detail-filters"><label>الشهر<select id="salaryEmployeeMonth"><option value="">اختر الشهر</option></select></label><label class="employee-search-label">بحث عن الموظف<input id="salaryEmployeeSearch" type="search" placeholder="اكتب جزءًا من الاسم..." autocomplete="off"><div id="salaryEmployeeSearchResults" class="employee-search-results"></div><select id="salaryEmployeeSelect" class="salary-hidden-select"><option value="">اختر الموظف / العامل</option></select><div id="salaryEmployeeSelected" class="selected-employee-display">اختر الموظف / العامل</div></label></div><div id="salaryEmployeeDetail" class="salary-detail-card"></div></section>
+<section class="advance-menu-page hidden-view" id="salaryEntryPage"><div class="advance-menu-head"><div><span class="home-kicker">إدخال / تعديل الراتب</span><h2>بيانات راتب الموظف</h2><p>اختر الشهر والموظف. الساعات الأساسية والفعلية تحسب تلقائيًا، ولا تُدخل يدويًا.</p></div><button class="advance-menu-home" id="salaryEntryHomeBtn">⌂ الرئيسية</button></div><div class="entry-card salary-entry-card"><div class="form-grid"><label>الشهر<input id="salaryMonthInput" type="month"></label><label class="employee-search-label">بحث واختيار الموظف<input id="salaryEmployeeEntrySearch" type="search" placeholder="اكتب اسم الموظف..." autocomplete="off"><div id="salaryEmployeeEntrySearchResults" class="employee-search-results"></div><select id="salaryEmployeeInput" class="salary-hidden-select"><option value="">اختر الموظف / العامل</option></select><div id="salaryEmployeeEntrySelected" class="selected-employee-display">اختر الموظف / العامل</div></label><label>عملة الراتب<select id="salaryCurrency"><option value="IQD">دينار عراقي</option><option value="USD">دولار</option></select></label><label>الراتب الاسمي<input id="salaryNominal" type="number" min="0" step="0.01"></label><label>ساعات العمل الرسمية يومياً<input id="salaryOfficialHours" type="number" min="1" step="0.5" value="8"><small class="field-hint">مثال: 10 ساعات يوميًا</small></label><label>الساعات الأساسية بالشهر<input id="salaryBaseHours" type="number" readonly value="240"><small class="field-hint">تُحسب تلقائيًا = الساعات اليومية × 30</small></label><label>الساعات الفعلية بالشهر<input id="salaryWorkHours" type="number" readonly value="0"><small class="field-hint">بعد خصم الغياب والإجازات الزمنية</small></label><label>ساعات الإضافي اليومية<input id="salaryOvertimeDailyHours" type="number" min="0" step="0.5" value="0"><small class="field-hint">مثال: 3 × 30 = 90 ساعة</small></label><label>إجمالي الإضافي بالشهر<input id="salaryOvertimeHours" type="number" readonly value="0"></label><label>مبلغ خصم السلف لهذا الراتب<input id="salaryAdvanceDeduction" type="number" min="0" step="0.01" value="0"><small class="field-hint" id="salaryAdvanceDueHint">السلف المستحقة: 0 د.ع</small></label><label>لديه عمل ثانٍ؟<select id="salarySecondJob"><option value="false">لا — بدون عمل ثاني</option><option value="true">نعم — إضافة عمل ثاني</option></select></label><label>قيمة يوم العمل الثاني (د.ع)<input id="salarySecondJobValue" type="number" min="0" step="1" value="0"></label><label>أيام الحضور للعمل الثاني<input id="salarySecondJobDays" type="number" min="0" step="1" value="0" readonly></label></div><div class="salary-entry-actions"><button id="saveSalaryBtn" class="primary">حفظ الراتب</button><button id="salaryAnnualRaiseBtn" class="salary-secondary-btn">📈 الزيادة السنوية</button><button id="salaryDeleteBtn" class="salary-danger-btn">🗑 حذف الراتب</button></div></div></section>
+<section class="advance-menu-page hidden-view" id="penaltyEntryPage"><div class="advance-menu-head"><div><span class="home-kicker">إدارة العقوبات</span><h2>إضافة / تعديل عقوبة</h2></div><button class="advance-menu-home" id="penaltyEntryHomeBtn">⌂ الرئيسية</button></div><div class="entry-card"><div class="form-grid"><label>الموظف<select id="penaltyEmployee"><option value="">اختر الموظف / العامل</option></select></label><label>التاريخ<input id="penaltyDate" type="date"></label><label>نوع العقوبة<select id="penaltyType"><option value="deduction">خصم</option><option value="absence1">غياب ×1</option><option value="absence2">غياب ×2</option></select></label><label>مبلغ الخصم (للخصم فقط)<input id="penaltyAmount" type="number" min="0" step="0.01"></label><label>عملة الخصم<select id="penaltyCurrency"><option value="IQD">دينار عراقي</option><option value="USD">دولار</option></select></label><label>الملاحظات<input id="penaltyNotes" type="text"></label></div><button id="savePenaltyBtn" class="primary">حفظ العقوبة</button><button id="cancelPenaltyEditBtn" class="password-link hidden">إلغاء التعديل</button><div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>الموظف</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>العملة</th><th>إجراء</th></tr></thead><tbody id="penaltyEditBody"></tbody></table></div></div></section>
+<section class="detail-page hidden-view" id="penaltyAllReport"><div class="detail-page-head"><div><span class="home-kicker">تفاصيل جميع العقوبات</span><h2>سجل العقوبات</h2></div><button class="advance-menu-home" id="penaltyAllHomeBtn">⌂ الرئيسية</button></div><div class="detail-filters"><label>الشهر<select id="penaltyReportMonth"><option value="">جميع الأشهر</option></select></label></div><div class="table-wrap"><table><thead><tr><th>الموظف</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>العملة</th><th>الملاحظات</th></tr></thead><tbody id="penaltyReportBody"></tbody></table></div></section>
+<section class="detail-page hidden-view" id="penaltyEmployeeReport"><div class="detail-page-head"><div><span class="home-kicker">عقوبات كل موظف</span><h2>سجل عقوبات الموظف</h2></div><button class="advance-menu-home" id="penaltyEmployeeHomeBtn">⌂ الرئيسية</button></div><div class="detail-filters employee-detail-filters"><label>الشهر<select id="penaltyEmployeeMonth"><option value="">جميع الأشهر</option></select></label><label>الموظف<select id="penaltyEmployeeSelect"><option value="">اختر الموظف</option></select></label></div><div class="table-wrap"><table><thead><tr><th>الموظف</th><th>خصم</th><th>غياب ×1</th><th>غياب ×2</th><th>إجمالي الخصم المباشر</th></tr></thead><tbody id="penaltyEmployeeSummaryBody"></tbody></table></div><div id="penaltyEmployeeDetail" class="salary-detail-card"></div></section>
+    <section class="advance-menu-page hidden-view" id="advancesMenu">
+      <div class="advance-menu-head">
+        <div>
+          <span class="home-kicker">قسم السلف</span>
+          <h2>اختر العملية التي تريد تنفيذها</h2>
+          <p>اختر أحد الأزرار لفتح التفاصيل أو تنفيذ العملية المطلوبة.</p>
+        </div>
+        <button class="advance-menu-home" id="advanceMenuHomeBtn">⌂ الرئيسية</button>
+      </div>
+      <div class="advance-menu-grid">
+        <button class="advance-menu-card green" id="advanceMenuAddBtn"><span>＋</span><b>إضافة سلفة</b><small>إدخال سلفة جديدة</small></button>
+        <button class="advance-menu-card blue manager-only" id="advanceMenuEditBtn"><span>✎</span><b>تعديل / حذف سلفة</b><small>اختيار السلفة وتعديلها أو حذفها</small></button>
+        <button class="advance-menu-card blue manager-only" id="advanceMenuAddEmployeeBtn"><span>👤＋</span><b>إضافة موظف / عامل</b><small>إضافة اسم جديد للنظام</small></button>
+        <button class="advance-menu-card red manager-only" id="advanceMenuDeleteEmployeeBtn"><span>👤🗑</span><b>حذف موظف / عامل</b><small>إدارة أسماء الموظفين والعمال</small></button>
+        <button class="advance-menu-card navy" id="advanceMenuPrintBtn"><span>🖨</span><b>طباعة التقرير</b><small>طباعة تقرير السلف</small></button>
+        <button class="advance-menu-card navy" id="advanceMenuPdfBtn"><span>PDF</span><b>تصدير PDF</b><small>حفظ تقرير السلف كملف PDF</small></button>
+        <button class="advance-menu-card gold" id="advanceMenuAllDetailsBtn"><span>📋</span><b>تفاصيل جميع السلف</b><small>عرض كل السلف المسجلة</small></button>
+        <button class="advance-menu-card purple" id="advanceMenuEmployeeDetailsBtn"><span>👤</span><b>تفاصيل السلف لكل موظف</b><small>اختر الموظف لعرض جميع سلفه</small></button>
+      </div>
+    </section>
+
+    <section class="detail-page hidden-view" id="advanceDetailsAll">
+      <div class="detail-page-head"><div><span class="home-kicker">تفاصيل جميع السلف</span><h2>سجل جميع السلف</h2><p>عرض كامل للسلف المسجلة في النظام.</p></div><button class="advance-menu-home" id="backToAdvancesMenuAllBtn">← قسم السلف</button><button class="advance-menu-home" id="advanceAllHomeBtn">⌂ الرئيسية</button></div>
+      <div class="detail-filters"><label class="detail-select-wrap">الشهر المطلوب<div class="detail-select-shell"><select id="allAdvancesMonth"><option value="">جميع الأشهر</option></select><span class="detail-select-display" id="allAdvancesMonthDisplay">جميع الأشهر</span></div></label></div>
+      <div class="detail-stats"><div><span>عدد السلف</span><b id="allAdvancesCount">0</b></div><div><span>المجموع الكلي</span><b id="allAdvancesTotal">0 د.ع</b></div></div>
+      <div class="table-wrap"><table><thead><tr><th>ت</th><th>رقم العملية</th><th>التاريخ</th><th>الموظف / العامل</th><th>المبلغ</th><th>مانح السلفة</th><th>ملاحظات</th></tr></thead><tbody id="allAdvancesDetailsBody"></tbody></table></div>
+    </section>
+
+    <section class="detail-page hidden-view" id="advanceDetailsEmployee">
+      <div class="detail-page-head"><div><span class="home-kicker">تفاصيل السلف لكل موظف</span><h2>سجل سلف الموظف</h2><p>اختر الموظف لعرض جميع السلف الخاصة به.</p></div><button class="advance-menu-home" id="backToAdvancesMenuEmployeeBtn">← قسم السلف</button><button class="advance-menu-home" id="advanceEmployeeHomeBtn">⌂ الرئيسية</button></div>
+      <div class="detail-filters employee-detail-filters">
+        <label class="detail-select-wrap">الشهر المطلوب<div class="detail-select-shell"><select id="employeeAdvancesMonth"><option value="">جميع الأشهر</option></select><span class="detail-select-display" id="employeeAdvancesMonthDisplay">جميع الأشهر</span></div></label>
+        <label class="detail-select-wrap">اسم الموظف / العامل<div class="detail-select-shell"><select id="advanceDetailsEmployeeSelect"><option value="">اختر الموظف / العامل</option></select><span class="detail-select-display" id="advanceDetailsEmployeeSelectDisplay">اختر الموظف / العامل</span></div></label>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>الموظف / العامل</th><th>عدد السلف</th><th>مجموع السلف</th></tr></thead><tbody id="employeeAdvancesSummaryBody"></tbody></table></div>
+      <div class="detail-selected-title" id="selectedAdvanceEmployeeTitle">اختر موظفاً لعرض تفاصيل سلفه</div>
+      <div class="detail-stats"><div><span>عدد السلف</span><b id="employeeDetailsCount">0</b></div><div><span>مجموع سلف الموظف</span><b id="employeeDetailsTotal">0 د.ع</b></div></div>
+      <div class="table-wrap"><table><thead><tr><th>ت</th><th>رقم العملية</th><th>التاريخ</th><th>المبلغ</th><th>مانح السلفة</th><th>ملاحظات</th></tr></thead><tbody id="employeeAdvancesDetailsBody"><tr><td colspan="6" class="empty-cell">اختر الموظف / العامل لعرض تفاصيل سلفه</td></tr></tbody></table></div>
+    </section>
+
+    <section class="advance-menu-page hidden-view" id="leavesMenu">
+      <div class="advance-menu-head">
+        <div>
+          <span class="home-kicker">قسم الإجازات والزمنيات</span>
+          <h2>اختر العملية التي تريد تنفيذها</h2>
+          <p>إدارة الإجازات والتقارير في صفحات منفصلة وواضحة.</p>
+        </div>
+        <button class="advance-menu-home" id="leavesMenuHomeBtn">⌂ الرئيسية</button>
+      </div>
+      <div class="advance-menu-grid">
+        <button class="advance-menu-card green" id="leaveMenuAddBtn"><span>＋</span><b>إضافة إجازة</b><small>إدخال إجازة جديدة</small></button>
+        <button class="advance-menu-card blue manager-only" id="leaveMenuEditBtn"><span>✎</span><b>تعديل / حذف إجازة</b><small>اختيار الإجازة وتعديلها أو حذفها</small></button>
+        <button class="advance-menu-card gold" id="leaveMenuAllDetailsBtn"><span>📋</span><b>تفاصيل جميع الإجازات</b><small>تحديد الشهر وعرض سجل الإجازات</small></button>
+        <button class="advance-menu-card purple" id="leaveMenuEmployeeDetailsBtn"><span>👤</span><b>تفاصيل الإجازات لكل موظف</b><small>اختيار الشهر والموظف لعرض السجل</small></button>
+        <button class="advance-menu-card navy" id="leaveMenuPrintBtn"><span>🖨</span><b>طباعة التقرير</b><small>طباعة تقرير الإجازات</small></button>
+        <button class="advance-menu-card navy" id="leaveMenuPdfBtn"><span>PDF</span><b>تصدير PDF</b><small>حفظ تقرير الإجازات كملف PDF</small></button>
+      </div>
+    </section>
+
+    <section class="detail-page hidden-view" id="leaveDetailsAll">
+      <div class="detail-page-head"><div><span class="home-kicker">تفاصيل جميع الإجازات</span><h2>سجل جميع الإجازات</h2><p>حدد الشهر لعرض الإجازات التي تقع ضمنه.</p></div><button class="advance-menu-home" id="backToLeavesMenuAllBtn">← قسم الإجازات</button><button class="advance-menu-home" id="leaveAllHomeBtn">⌂ الرئيسية</button></div>
+      <div class="detail-filters"><label>الشهر المطلوب<select id="allLeavesMonth"><option value="">جميع الأشهر</option></select></label></div>
+      <div class="detail-stats"><div><span>عدد الإجازات</span><b id="allLeavesCount">0</b></div><div><span>مجموع الأيام</span><b id="allLeavesDays">0</b></div></div>
+      <div class="table-wrap"><table><thead><tr><th>ت</th><th>الموظف / العامل</th><th>النوع</th><th>الفترة</th><th>مانح / مسؤول الإجازة</th><th>ملاحظات</th></tr></thead><tbody id="allLeavesDetailsBody"></tbody></table></div>
+    </section>
+
+    <section class="detail-page hidden-view" id="leaveDetailsEmployee">
+      <div class="detail-page-head"><div><span class="home-kicker">تفاصيل الإجازات لكل موظف</span><h2>سجل إجازات الموظفين</h2><p>حدد الشهر، ثم اختر الموظف من القائمة أو اضغط اسمه في الجدول.</p></div><button class="advance-menu-home" id="backToLeavesMenuEmployeeBtn">← قسم الإجازات</button><button class="advance-menu-home" id="leaveEmployeeHomeBtn">⌂ الرئيسية</button></div>
+      <div class="detail-filters employee-detail-filters">
+        <label>الشهر المطلوب<select id="employeeLeavesMonth"><option value="">جميع الأشهر</option></select></label>
+        <label>اسم الموظف / العامل<select id="leaveDetailsEmployeeSelect"><option value="">اختر الموظف / العامل</option></select></label>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>الموظف / العامل</th><th>عدد الإجازات</th><th>مجموع الأيام</th><th>الزمنيات</th></tr></thead><tbody id="employeeLeavesSummaryBody"></tbody></table></div>
+      <div class="detail-selected-title" id="selectedLeaveEmployeeTitle">اختر موظفاً لعرض تفاصيل إجازاته</div>
+      <div class="detail-stats"><div><span>عدد الإجازات</span><b id="employeeLeavesCount">0</b></div><div><span>مجموع الأيام</span><b id="employeeLeavesDays">0</b></div><div><span>عدد الزمنيات</span><b id="employeeLeavesTimeCount">0</b></div></div>
+      <div class="table-wrap"><table><thead><tr><th>ت</th><th>النوع</th><th>الفترة</th><th>مانح / مسؤول الإجازة</th><th>ملاحظات</th></tr></thead><tbody id="employeeLeavesDetailsBody"><tr><td colspan="5" class="empty-cell">اختر الموظف / العامل لعرض تفاصيل إجازاته</td></tr></tbody></table></div>
+    </section>
+
+    <section class="sub-toolbar" id="leavesActions">
+      <button class="sub-tool navy" id="homeFromLeavesBtn"><span>⌂</span>الرئيسية</button><button class="sub-tool navy" id="sectionFromLeavesBtn"><span>←</span>قسم الإجازات</button>
+      <button class="sub-tool green" id="addLeaveBtn"><span>＋</span>إضافة إجازة</button>
+      <button class="sub-tool blue manager-only" id="editLeaveBtn"><span>✎</span>تعديل / حذف إجازة</button>
+    </section>
+
+    <section class="entry-card advances-part">
+      <div class="entry-head">إدخال سلفة جديدة</div>
+      <div class="form-grid">
+        <label>اسم الموظف / العامل
+          <div class="custom-select" id="employeePicker">
+            <select id="employeeSelect" class="native-select"><option value="">اختر الموظف</option></select>
+            <button type="button" class="select-display" data-select="employeeSelect"><span>اختر الموظف</span><b>⌄</b></button>
+            <div class="select-menu">
+              <input type="text" class="select-search" placeholder="🔍 ابحث عن اسم الموظف..." autocomplete="off">
+              <div class="select-options"></div>
+            </div>
+          </div>
+        </label>
+        <label>مبلغ السلفة (د.ع)
+          <input id="amount" type="text" inputmode="numeric" pattern="[0-9,]*" autocomplete="off" placeholder="0">
+        </label>
+        <label>التاريخ
+          <input id="advanceDate" type="date">
+        </label>
+        <label>مانح السلفة
+          <div id="giverReadonly"></div>
+          <div class="custom-select" id="giverPicker">
+            <select id="giverSelect" class="native-select"><option value="">اختر الاسم</option></select>
+            <button type="button" class="select-display" data-select="giverSelect"><span>اختر الاسم</span><b>⌄</b></button>
+            <div class="select-menu">
+              <input type="text" class="select-search" placeholder="🔍 ابحث عن مانح السلفة..." autocomplete="off">
+              <div class="select-options"></div>
+            </div>
+          </div>
+        </label>
+        <label>ملاحظات
+          <input id="notes" type="text" placeholder="">
+        </label>
+      </div>
+    </section>
+
+    <section class="workspace-actions advances-part" id="advancesWorkspaceActions">
+      <button class="sub-tool navy" id="homeFromAdvancesBtn"><span>⌂</span>الرئيسية</button>
+      <button class="sub-tool navy" id="sectionFromAdvancesBtn"><span>←</span>قسم السلف</button>
+      <button class="sub-tool green" id="addBtn"><span>＋</span>إضافة سلفة</button>
+      <button class="sub-tool blue manager-only" id="editBtn"><span>✎</span>تعديل السلفة</button>
+      <button class="sub-tool red manager-only" id="deleteBtn"><span>🗑</span>حذف السلفة المحددة</button>
+      <button class="sub-tool blue manager-only" id="addEmployeeBtn"><span>👤＋</span>إضافة موظف / عامل</button>
+      <button class="sub-tool red manager-only" id="deleteEmployeeBtn"><span>👤🗑</span>حذف موظف / عامل</button>
+      <button class="sub-tool navy" id="printBtn"><span>🖨</span>طباعة التقرير</button>
+      <button class="sub-tool excel" id="exportBtn"><span>PDF</span>تصدير PDF</button>
+    </section>
+
+    <section class="table-wrap advances-part">
+      <table id="advancesTable">
+        <thead>
+          <tr>
+            <th>ت</th>
+            <th>رقم العملية</th>
+            <th>التاريخ</th>
+            <th>اسم الموظف / العامل</th>
+            <th>مبلغ السلفة (د.ع)</th>
+            <th>مانح السلفة</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="workspace-actions leaves-part" id="leavesWorkspaceActions">
+      <button class="sub-tool navy" id="leaveWorkspaceHomeBtn"><span>⌂</span>الرئيسية</button>
+      <button class="sub-tool navy" id="leaveWorkspaceSectionBtn"><span>←</span>قسم الإجازات</button>
+      <button class="sub-tool green" id="leaveWorkspaceAddBtn"><span>＋</span>إضافة إجازة</button>
+      <button class="sub-tool blue manager-only" id="leaveWorkspaceEditBtn"><span>✎</span>تعديل / حذف إجازة</button>
+    </section>
+
+    <section class="leave-section leaves-part hidden-view" id="leaveSection">
+      <div class="leave-section-head">
+        <div><div class="summary-title blue">سجل الإجازات</div><div class="leave-subtitle">الإجازات اليومية والزمنية كاملة</div></div>
+        <div class="leave-stats"><span>إجمالي الإجازات <b id="leaveCount">0</b></span><span>المجازون الآن <b id="activeLeaveCount">0</b></span></div>
+      </div>
+      <div class="table-wrap leave-table-wrap">
+        <table id="leavesTable"><thead><tr><th>ت</th><th>الموظف / العامل</th><th>النوع</th><th>الفترة</th><th>مانح / مسؤول الإجازة</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section class="summary-card leave-summary-card leaves-part hidden-view" id="leaveSummaryCard">
+      <div class="summary-title green2">ملخص الإجازات حسب الموظف</div>
+      <table id="leaveSummary"><thead><tr><th>الموظف / العامل</th><th>عدد الإجازات</th><th>الحالة الآن</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="summary-grid advances-part advance-report-only">
+      <div class="summary-card">
+        <div class="summary-title brown">مجموع السلف حسب المانح</div>
+        <table id="giverSummary"><thead><tr><th>مانح السلفة</th><th>عدد العمليات</th><th>المجموع (د.ع)</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div class="summary-card" id="employeeSummaryCard">
+        <div class="summary-title blue">مجموع السلف لكل موظف</div>
+        <table id="employeeSummary"><thead><tr><th>اسم الموظف / العامل</th><th>عدد السلف</th><th>المجموع (د.ع)</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div class="summary-card monthly">
+        <div class="summary-title green2">ملخص الشهر</div>
+        <div class="stat"><span>شهر</span><b id="summaryMonth"></b></div>
+        <div class="stat"><span>عدد العمليات</span><b id="opCount">0</b></div>
+        <div class="stat"><span>عدد الموظفين</span><b id="employeeCount">0</b></div>
+        <div class="stat"><span>عدد المانحين</span><b id="giverCount">0</b></div>
+        <div class="total"><span>المجموع الكلي للسلف</span><b id="grandTotal">0 د.ع</b></div>
+      </div>
+    </section>
+
+    <section class="footer-note">
+      <span>إدارة مالية دقيقة ... لعمل مستقر ومزدهر</span>
+      <span>📍 AMAZON SUPER MARKET</span>
+      <strong>أمازون سوبر ماركت</strong>
+      <span>الالتزام ... ثقة ... نجاح</span>
+    </section>
+
+    <section class="print-details advances-part advance-report-only" id="printDetails">
+      <div class="print-details-head">
+        <div>
+          <div class="print-details-title">تفاصيل السلف</div>
+          <div class="print-details-subtitle">تفاصيل جميع السلف المسجلة خلال شهر <span id="detailsMonth"></span></div>
+        </div>
+        <div class="print-details-total">
+          <span>عدد السلف</span>
+          <b id="detailsCount">0</b>
+        </div>
+      </div>
+      <table id="detailsTable">
+        <thead>
+          <tr>
+            <th>ت</th>
+            <th>رقم العملية</th>
+            <th>التاريخ</th>
+            <th>اسم الموظف / العامل</th>
+            <th>مبلغ السلفة (د.ع)</th>
+            <th>مانح السلفة</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody id="printDetailsBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="modal" id="passwordModal">
+    <div class="modal-box small">
+      <button class="close" id="closePassword">×</button>
+      <h2 id="passwordModalTitle">تغيير كلمة المرور</h2>
+      <div id="passwordTargetWrap" class="hidden"><label>اختر المانح المراد تغيير كلمة مروره<select id="passwordTargetGiver"><option value="">اختر اسم المانح</option></select></label></div>
+      <div id="passwordChangeFields"><label>كلمة المرور الحالية<input id="oldPassword" type="password" autocomplete="current-password"></label></div>
+      <div id="forgotManagerFields" class="hidden"><label>كلمة مرور المدير<input id="forgotManagerPassword" type="password" autocomplete="current-password" placeholder="أدخل كلمة مرور المدير"></label><p class="password-note">إعادة التعيين متاحة للمدير فقط.</p></div>
+      <label>كلمة المرور الجديدة<input id="newPassword" type="password" autocomplete="new-password" placeholder="6 أحرف أو أكثر"></label>
+      <label>تأكيد كلمة المرور<input id="confirmPassword" type="password" autocomplete="new-password"></label>
+      <p id="forgotPasswordNote" class="password-note hidden">إعادة تعيين كلمة المرور بعد نسيانها تحتاج اعتماد المدير؛ لن يتم وضع تجاوز غير آمن لكلمة المرور.</p>
+      <button id="savePassword" class="primary password-save-btn">حفظ كلمة المرور</button>
+    </div>
+  </div>
+
+  <div class="modal" id="peopleModal">
+    <div class="modal-box">
+      <button class="close" id="closePeople">×</button>
+      <h2 id="peopleTitle">إدارة الموظفين والعمال</h2>
+      <div class="inline-form">
+        <input id="personName" placeholder="اكتب اسم واحد">
+        <button id="savePerson" class="primary">إضافة اسم</button>
+      </div>
+      <div class="bulk-people">
+        <label for="bulkPersonNames">إضافة عدة أسماء دفعة واحدة</label>
+        <textarea id="bulkPersonNames" rows="5" placeholder="اكتب كل اسم في سطر مستقل، مثال:
+أحمد علي
+محمد كريم
+علي حسين"></textarea>
+        <button id="savePeopleBulk" class="primary bulk-btn">إضافة جميع الأسماء</button>
+      </div>
+      <div id="peopleList"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="leaveModal">
+    <div class="modal-box">
+      <button class="close" id="closeLeave">×</button><h2 id="leaveModalTitle">إضافة إجازة</h2>
+      <div class="leave-form-grid">
+        <label>الموظف / العامل<select id="leaveEmployee"><option value="">اختر الموظف</option></select></label>
+        <label id="leaveGiverWrap">مانح / مسؤول الإجازة<select id="leaveGiver"><option value="">اختر الاسم</option></select></label>
+        <label>نوع الإجازة<select id="leaveType"><option value="day">إجازة بالأيام</option><option value="time">إجازة زمنية</option></select></label>
+      </div>
+      <div id="dayLeaveFields" class="leave-fields"><label>من تاريخ<input id="leaveStartDate" type="date"></label><label>إلى تاريخ<input id="leaveEndDate" type="date"></label></div>
+      <div id="timeLeaveFields" class="leave-fields hidden"><label>التاريخ<input id="leaveDate" type="date"></label><label>من الساعة<input id="leaveStart" type="time"></label><label>إلى الساعة<input id="leaveEnd" type="time"></label></div>
+      <label>ملاحظات<input id="leaveNotes" type="text" placeholder="اختياري"></label>
+      <button id="saveLeave" class="primary leave-save-btn">حفظ الإجازة</button>
+    </div>
+  </div>
+
+  <div class="modal" id="confirmModal">
+    <div class="modal-box small">
+      <h2>تأكيد</h2>
+      <p id="confirmText"></p>
+      <div class="confirm-actions">
+        <button id="confirmYes" class="danger">نعم</button>
+        <button id="confirmNo">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js?v=20261007-2"></script>
+</body>
+</html>
